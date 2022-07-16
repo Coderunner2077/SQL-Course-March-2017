@@ -1,0 +1,1366 @@
+								PART I : BASICS
+
+ONE THING WORTH MENTIONING, SQL IS NOT CASE SENSITIVE.
+
+/*
+SELECT * FROM Customers
+WHERE (Country='Germany' AND City='Berlin')
+OR (Country = 'France' AND City = 'Paris');
+*/
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/*
+INSERT INTO Customers
+VALUES('92', 'Baran Baranov', 'Moooton', '1 Rue des Moutons', 'Moutonville', '123456', 'Moutonland');
+*/
+/*
+INSERT INTO Customers(CustomerName, Address, City, Country)
+VALUES('Loulou', '2 Rue des Loulous', 'Louloucity', 'Loulouland');
+*/
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/*
+SELECT * FROM Customers
+ORDER BY CustomerID DESC;
+*/
+SELECT * FROM Customers
+ORDER BY CustomerID ASC; -- it's ascendant by default already...
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL UPDATE
+
+SQL UPDATE syntax :
+
+UPDATE table_name SET column_name=new_value WHERE condition
+
+UPDATE Customers SET ContactName = 'Bouboule' WHERE Country = 'France';
+
+/*
+UPDATE Customers SET ContactName = 'Michell Obama', PostalCode = 'Z4340'
+WHERE CustomerID='93' OR City='Marseille';
+*/
+--NE PAS OUBLIER WHERE, CAR SINON ON CHANGE LES DONNEES DANS TOUTE LA TABLE : 
+/*
+UPDATE Customers
+SET CustomerName = 'Pitboule'; -- /!\ pas de WHERE !
+*/
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/*
+Supprimer toutes les lignes où le CustomerID est différent de 3 : 
+DELETE FROM Customers
+WHERE CustomerID <> 3;
+
+Synax MySQL : 
+
+DELETE FROM Customers
+WHERE CustomerID != 3;
+*/
+/*
+DELETE FROM Customers
+WHERE CustomerName = 'Vaffeljernet';
+*/
+
+Deleting all rows in the table without deleting the table :
+/*
+DELETE FROM Customers;
+or
+DELETE * FROM Customers;
+*/
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+SQL Injection : saisie de données utilisateur ayant pour but d'avoir accès à des informations confidentielles (voir comment sécuriser l'entrée clavier...)
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+RESTREINDRE LE NOMBRE DE LA SELECTION 
+-- SQL Server / MS Access Syntax :
+/*
+SELECT TOP 10 * FROM Customers; -- TOP LIMIT OF 20 ROWS							- ! 1
+SELECT TOP 20 PERCENT * FROM Customers; -- TOP LIMIT OF 20 % of rows
+*/
+--MySQL Syntax :
+SELECT * FROM Customers LIMIT 10;
+
+--Oracle syntax :
+SELECT * FROM Customers WHERE ROWNUM <= 10;
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- SQL LIKE operator:
+/*
+SELECT column_name(s)
+FROM table_name
+WHERE column_name LIKE pattern
+*/
+--EXAMPLE : 
+/*
+SELECT * FROM Customers
+WHERE CustomerName LIKE 'p%isa%s' -- expression commençant par 'p', contenat 'isa' et se terminant par un 's'
+OR CustomerName NOT LIKE '%m%a'; -- expression ne contenant pas de 'm' et ne se terminant pas par un 'a'
+*/
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+THE WILDCARDS
+SELECT * FROM Customers WHERE Country LIKE 's%land';
+/*
+SELECT * FROM Customers WHERE City LIKE '_erlin'
+OR City LIKE 'L_nd_n'
+OR CustomerName NOT LIKE '_s%';
+*/
+/*
+--Selecting names starting with 'a', 'e' or 'o'
+SELECT * FROM Customers WHERE CustomerName LIKE '[aeo]%';
+--selecting cities starting with 'a', 'b' or 'c'
+SELECT * FROM Customers WHERE City LIKE '[a-c]%';
+--selecting cities not starting with 'a', 'b' or 'c'
+SELECT * FROM Customers WHERE City LIKE '[!a-c]%';
+--idem
+SELECT * FROM Customers WHERE City LIKE '[^a-c]%';
+--idem 
+SELECT * FROM Customers WHERE City NOT LIKE '[a-c]%';
+*/
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL IN Operator 
+-- SQL IN Operator lets specify multiple values in a WHERE clause:
+SELECT * FROM Customers WHERE City IN ('Paris', 'London', 'New-York');
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL BETWEEN
+--SQL BETWEEN Operator selects values(numbers, text or date) between a range :
+SELECT * FROM Products WHERE Price BETWEEN 10 AND 20 ORDER BY SupplierID DESC;
+
+SELECT * FROM Products WHERE (Price BETWEEN 10 AND 20) AND NOT CategoryID IN (1, 2, 3);
+SELECT * FROM Products WHERE ProductName BETWEEN 'C' AND 'L' ORDER BY ProductName; 
+SELECT * FROM Orders WHERE OrderDate BETWEEN '1996-07-01' AND '1997-02-01';
+--in some data base :
+SELECT * FROM Orders WHERE OrderDate BETWEEN #1996-07-01# AND #1996-12-31#;
+
+--SQL NOT BETWEEN :
+SELECT * FROM Products WHERE Price NOT BETWEEN 10 AND 20;
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL Alias
+--SQL Aliases are used to temporarily rename a table or a column heading :
+SELECT column_name AS alias_name FROM table_name
+--EXAMPLE (here, I also used square brackets because the column name contains spaces) :
+SELECT CustomerName AS Customer, ContactName AS [Contact Person] FROM Customers; 
+/*
+SELECT o.OrderID, o.OrderDate, c.CustomerName, c.CustomerID
+FROM Customers AS c, Orders as o
+WHERE c.CustomerName = 'Around the Horn' AND o.CustomerID = c.CustomerID;
+*/
+--In the following statement, I combine 4 columns (CustomerName, Address, PostalCode, City) and create an alias named "Adresse" :
+/*
+SELECT CustomerName, Address+', '+City+', '+PostalCode+', '+Country AS Adresse
+FROM Customers;
+*/
+--to get the statement just above to work on MySQL, I need to procede as this :
+/*
+SELECT CustomerName, CONCAT(Address,', ',City,',',PostalCode,', ',Country) AS Adresse
+FROM Customers;
+*/
+/*
+Aliases can be useful when:
+	- There are more that one table involed in a query
+	- Functions are used in the query
+	- Column names are big or not very readable
+	- Two or more columns are combined together
+*/
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL Joins :
+Joins are used to combine rows from two or more tables, based on a common field between them.
+The most commun type of join is : SQL INNER JOIN (simple join). An SQL INNER JOIN return all rows from
+multiple tables where the join is met.
+These are the different SQL JOINs I can use ==>
+	- INNER JOIN : will return all rows where there is at least one match on BOTH tables
+	- LEFT JOIN : Return all rows from the left table, and the matched rows from the right table
+	- RIGHT JOIN : return all rows from the right table, and the matched rows from the left table
+	- FULL JOIN : return all rows when there is a match in ONE of the tables
+
+In some data bases, JOIN is the same as INNER JOIN.
+SQL INNER JOIN Syntax :
+SELECT column_name(s)
+FROM table1
+INNER JOIN table2
+ON table1.column_name = table2.column_name;										
+
+example for the INNER JOIN :
+/*
+SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate
+FROM Orders
+INNER JOIN Customers
+ON Orders.CustomerID = Customers.CustomerID;
+*/
+
+Another example (using aliases as well) :
+
+SELECT c.CustomerName, o.OrderDate
+FROM Customers AS c
+INNER JOIN Orders AS o
+ON c.CustomerID = o.CustomerID
+ORDER BY o.OrderDate;
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL LEFT JOIN : in some databases, LEFT JOIN is called LEFT OUTER JOIN
+The syntax for SQL LEFT JOIN :
+SELECT column_name(s)
+FROM table1
+LEFT JOIN table2
+ON table1.column_name = table2.column_name;
+
+example :
+SELECT c.CustomerName, o.OrderID, o.OrderDate
+FROM Customers AS c
+LEFT JOIN Orders AS o
+ON c.CustomerID = o.CustomerID
+ORDER BY c.CustomerName;
+
+Note : the left join returns all the rows from the left table (Customers), even when there are no matches 
+in the right table (Orders en l'occurence).
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL RIGHT JOIN :
+the same as LEFT JOIN, except that it returns all the rows from the right table (Employees), with the matching rows of the left table.
+It returns only the rows from the right table when there are no matches in the left table (Orders)
+Syntax :
+SELECT column_name(s)
+FROM table1
+RIGHT JOIN table2
+ON table1.column_name = table2.column_name;
+
+exemple :
+SELECT o.OrderID, e.FirstName
+FROM Orders AS o
+RIGHT JOIN Employees AS e
+ON o.EmployeeID = e.EmployeeID
+ORDER BY e.FirstName;
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL FULL JOIN :
+Syntax ==>
+SELECT column_name(s)
+FROM table1
+FULL OUTER JOIN table2
+ON table1.column_name = table2.column_name;
+
+The full outer join combines the result of both LEFT and RIGHT joins.
+
+The following statement selects all customers, and all orders :
+SELECT c.CustomerName, o.OrderID
+FROM Customers AS c
+FULL OUTER JOIN Orders AS o
+ON c.CustomerID = o.CustomerID
+ORDER BY c.CustomerName;
+
+Note : the FULL OUTER JOIN keyword returns all the rows from the left table (Customers), and all the rows from the
+right table (Orders). And who cares whether or not there are matches? Not FULL OUTER JOIN.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL UNION 
+SQL UNION operator combines the result-set of two or more SELECT statements.
+Each SELECT statement within the UNION must have the same number of columns. The columns must also have similar
+data types. Also the columns in each SELECT statement must be in the same order.
+
+SQL UNION syntax :
+SELECT column_name(s) FROM table1
+UNION 
+SELECT column_name(s) FROM table2;
+
+Note : the UNION operator selects only distinct values by default. 						
+To allow duplicate values, I need to use the ALL keyword with UNION.
+
+SQL UNION ALL syntax :
+SELECT column_name(s) FROM table1
+UNION ALL
+SELECT column_name(s) FROM table2;
+
+Example :
+
+SELECT City FROM Customers
+UNION 
+SELECT City FROM Suppliers
+ORDER BY City;
+------------------------------
+Note : UNION cannot be used to list ALL cities from the two tables. If several customers and suppliers share the same city, 
+each city will only be listed once. UNION selects only distinct values. UNION ALL selects also duplicate values.
+
+The following SQL statement uses UNION ALL to select all (duplicate values also) cities from the "Customers" and 
+"Suppliers" tables :
+
+SELECT City FROM Customers
+UNION ALL
+SELECT City FROM Suppliers
+ORDER BY City;
+------------------------------
+PS : the column names in the result-set of a UNION are usually equal to the column names in the first SELECT 
+statement in the UNION.
+
+Example (SupplierName is replaced by CustomerName here) :
+
+SELECT CustomerName, City FROM Customers WHERE Country = 'USA'
+UNION ALL
+SELECT SupplierName, City FROM Suppliers WHERE Country = 'USA'
+ORDER BY City;
+------------------------------
+SQL UNION ALL with WHERE :
+
+SELECT City FROM Customers WHERE Country = 'GERMANY'
+UNION ALL
+SELECT City FROM Suppliers WHERE Country = 'GERMANY'
+ORDER BY City;
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL SELECT INTO 
+
+With SQL, I can copy information from one table into another.
+The SELECT INTO statement selects/copies data from one table and inserts it into a new table.
+
+SQL SELECT INTO syntaxes :
+
+I can copy all the columns into the new table :
+SELECT *
+INTO newtable [IN externaldb]		 -- ==>where externaldb is the URL of an external database file
+FROM table1;
+
+Or I can copy only the columns I want into the new table :
+
+SELECT column_name(s)
+INTO newtable [IN externaldb]
+FROM table1;
+
+The new table will be created with the column-names and types as defined in the SELECT statement. 
+I can apply new names using the AS clause. 
+
+EXAMPLES :
+Create a backup copy for Customers :
+SELECT *
+INTO CustomersBackup2017
+FROM Customers;
+
+Use the IN clause to copy the table into another database :
+SELECT *
+INTO CustomersBackup2017 IN 'Backup.mdb'
+FROM Customers;
+
+Select only a few columns into the new table :
+SELECT CustomerName, ContactName
+INTO CustomersBackup2017
+FROM Customers;
+------------------------------
+Copy only the German customers into the new table :
+SELECT *
+INTO CustomersBackup2017
+FROM Customers
+WHERE City = 'Germany';
+------------------------------
+Copy data from more than one table into the new table :
+SELECT Customers.CustomerName, Orders.OrderID
+INTO CustomersOrderBuckup2017
+FROM Customers
+LEFT JOIN Orders
+ON Customers.CustomerID = Orders.CustomerID;
+------------------------------------------------------------
+The SELECT INTO statement can also be used to create a new, empty table using the schema of another.
+I just need to add a WHERE clause that causes the query to return no data :
+SELECT *
+INTO newtable
+FROM table1
+WHERE 1=0;
+
+Example :
+SELECT *
+INTO CustomersBackup2017
+FROM Customers
+WHERE 1=0;
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL INSERT INTO SELECT 
+The INSERT INTO SELECT statement selects/copies data from one table and inserts it into an existing table.
+Any existing rows in the target table are unnaffected.
+
+SQL INSERT INTO SELECT syntax :
+To copy all columns from one table into another, existing table ==>
+INSERT INTO table2
+SELECT * FROM table1;
+
+Or to copy only the columns I want to into another, existing table :
+INSERT INTO table2 (column_name(s))
+SELECT column_name(s) 
+FROM table1;
+
+Examples :
+Copy only a few columns from Suppliers to Customers :
+INSERT INTO Customers (CustomerName, Country)
+SELECT SupplierName, Country FROM Suppliers;
+
+Copy only the German Suppliers into Customers :
+INSERT INTO Customers (CustomerName, Country)
+SELECT SupplierName, Country FROM Suppliers
+WHERE Country = 'Germany';
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL CREATE DATABASE
+
+The CREATE DATABASE statement is used to create a database.
+
+--SQL CREATE DATABASE syntax :
+CREATE DATABASE dbname;
+
+Example : 
+The following statement creates a database called "my_db" :
+
+CREATE DATABASE my_db;
+
+Database tables can be added with the CREATE TABLE statement.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL CREATE TABLE
+
+SQL CREATE TABLE statement is used to create a table in a database.
+Tables are organized in rows and columns; and each table must have a name.
+
+SQL CREATE TABLE syntax :
+
+CREATE TABLE table_name
+(
+column_name1 data_type(size);
+column_name2 data_type(size);
+column_name3 data_type(size);
+...
+);
+
+The column_name parameters specify the names of the columns of the table.
+The data_type parameter specifies what type of data the column can hold(e.g. varchar, integer, 
+decimal, data, etc.).
+The size parameter specifies the maximum length of the column of the table.
+
+Tip : for an overview of the data types available in MS Access, MySQL and SQL Server :
+	==> http://www.w3schools.com/sql/sql_datatypes.asp
+
+Example :
+I'm creating a table called "Persons" that contains 5 columns : PersonID, LastName, FirstName,
+Address and City :
+
+CREATE TABLE Persons 
+(
+PersonID int,
+LastName varchar(255),
+FirstName varchar(255),
+Address varchar(255),
+City varchar(255)
+);
+
+The PersonID column is of type int and will hold an integer.
+The LastName, FirstName, Address and City are of type varchar and will hold characters, 
+and the maximum length for these fields is 255 characters.
+
+Once created, this table will be empty ==> and can be filled in with INSERT INTO statement.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL Constraints
+
+SQl constraints are used to specify rules for the data in a table.
+If there is any violation between the constraint and the data action, the action is aborted by the constraint.
+Constraints can be specified when the table is created (inside the CREATE TABLE statement) or
+after the table is created (inside the ALTER TABLE statement).
+
+SQL CREATE TABLE + CONSTRAINT syntax :
+
+CREATE TABLE table_name
+(
+column_name1 data_type(size) contstaint_name,
+column_name2 data_type(size) constaint_name,
+column_name3 data_type(size) constaint_name,
+...
+);
+
+In SQL, we have the following constaints :
+	- NOT NULL : Indicates that the column cannot store NULL value
+	- UNIQUE : Ensures that each row for a column must have unique value
+	- PRIMARY KEY : A combinaison of a NOT NULL and UNIQUE. Ensures that a column (or combinaison of two or 
+			more columns) have a unique identity which helps to find a particular record in a table 
+			more easily and quickly
+	- FOREIGN KEY : Ensure the referential integrity of the data in one table to match values in another table
+	- CHECK : Ensures that the values in a column meets a specific condition
+	- DEFAULT : Specifies a default value for a column
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL NOT NULL Constraint
+
+The NOT NULL constraint enforces a column to NOT accept NULL values.
+The NOT NULL constraint enforces a field to allways contain a value. This means that I cannot insert a new record,
+or update a record without adding a value to this field.
+
+The following SQL statement enforces "P_Id" column and the "LastName" column to not accept NULL values :
+CREATE TABLE Persons
+(
+P_Id int NOT NULL,
+LastName varchar(255) NOT NULL,
+FirstName varchar(255),
+Address varchar(255),
+Country varchar(255)
+);
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL UNIQUE Constraint
+
+The UNIQUE constraint uniqualy identifies each record in a database table.
+The UNIQUE and PRIMARY KEY constraint both provide a guarantee for uniqueness for a column or a set of columns.
+A PRIMARY KEY constraint automatically has a UNIQUE constraint defined on it.
+Note : I can have many UNIQUE constraints per table, but only one PRIMARY KEY constraint per table.
+
+SQL UNIQUE Constraint on CREATE TABLE :
+The following SQL creates a UNIQUE constraint on "P_Id" column when the Persons table is created :
+
+SQL Server / Oracle / MS Access :
+CREATE TABLE Persons
+(
+P_Id int NOT NULL UNIQUE,
+LastName varchar(255) NOT NULL,
+FirstName varchar(255),
+Address varchar(255),
+Country varchar(255)
+);
+
+MySQL :
+CREATE TABLE Persons
+(
+P_Id int NOT NULL,
+LastName varchar(255) NOT NULL,
+FirstName varchar(255),
+Address varchar(255),
+Country varchar(255),
+UNIQUE (P_Id)
+);
+
+And to allow naming of a UNIQUE constraint, and for defining a UNIQUE constraint on multiple columns
+==> I need to use the following syntax :
+MySQL / SQL Server / Oracle / MS Access
+CREATE TABLE Persons
+(
+P_Id int NOT NULL,
+LastName varchar(255) NOT NULL,
+FirstName varchar(255),
+Address varchar(255),
+Country varchar(255),
+CONSTRAINT uc_PersonID UNIQUE (P_Id, LastName)
+);
+
+-------------------------------------------------------------------------
+SQL UNIQUE Constraint on ALTER TABLE 
+
+To create a UNIQUE constraint on the "P_Id" column when the table is already created, I need
+to use the following SQL :
+MySQL / SQL Server / Orace / MS Access :
+ALTER TABLE Persons
+ADD UNIQUE (P_Id);
+
+To allow naming of a UNIQUE constraint, and for defining a UNIQUE constraint on multiple columns :
+MySQL / SQL Server / Oracle / MAS Access :
+ALTER TABLE Persons
+ADD CONSTRAINT uc_PersonID UNIQUE (P_Id, LastName);
+
+-------------------------------------------------------------------------
+DROP a UNIQUE constraint 
+
+To drop a UNIQUE constraint : 
+MySQL :
+ALTER TABLE Persons
+DROP INDEX uc_PersonID;
+
+SQL Server / Oracle / MS Access :
+ALTER TABLE Persons
+DROP CONSTRAINT uc_PersonID;
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL PRIMARY KEY Constraint
+
+The PRIMARY KEY constraint uniquely identifies each record in a database table.
+Primary keys must contain UNIQUE values.
+A primary key column cannot contain NULL value.
+Most tables should have a primary key, and each table can have only ONE primary key.
+
+SQL PRIMARY KEY Constraint on CREATE TABLE :
+SQL Server / Oracle / MS Access ==>
+CREATE TABLE Persons
+(
+PersonID int NOT NULL PRIMARY KEY,
+LastName varchar(255) NOT NULL,
+...
+Country varchar(255)
+);
+
+MySQL ==>
+CREATE TABLE Persons
+(
+PersonID int NOT NULL,
+LastName varchar(255) NOT NULL,
+...
+Country varchar(255),
+PRIMARY KEY (PersonID)
+);
+
+To allow naming of a PRIMARY KEY constraint, and for defining a PRIMARY KEY constraint on multiple columns,
+here the following SQL syntax :
+MySQL / SQL Server / Oracle / MS Access ==>
+CREATE TABLE Persons
+(
+PersonID int NOT NULL,
+LastName varchar(255) NOT NULL,
+...
+Country varchar(255),
+CONSTRAINT pk_PersonID PRIMARY KEY (PersonID, LastName)
+);
+
+Note : in the example above, there is only ONE PRIMARY KEY (pk_PersonID). However, the VALUE of the 
+primary key is made up of TWO COLUMNS (P_Id + LastName).
+
+---------------------------------------------------------------------------
+SQL PRIMARY KEY constraint on ALTER TABLE
+
+To create a PRIMARY KEY constraint on the "P_Id" when the table is already created, I need to use
+the following SQL :
+
+--MySQL / SQL Server / Oracle / MS Access ==>
+ALTER TABLE Persons
+ADD PRIMARY KEY (P_Id);
+
+To allow naming of a PRIMARY KEY constraint, and for defining a PRIMARY KEY constraint on
+multiple columns :
+--MySQL / SQL Server / Oracle / MS Access ==>
+ALTER TABLE Persons
+ADD CONSTRAINT pk_PersonID PRIMARY KEY (P_Id, LastName);
+
+Note : If I use the ALTER TABLE statement to add a primary key, the primary key column(s) must 
+already have been declared to not contain NULL values (when the table was first created).
+---------------------------------------------------------------------------
+To DROP a PRIMARY KEY constraint
+==> use :
+--MySQL :
+ALTER TABLE Persons
+DROP PRIMARY KEY;  		-- whitout the key name (!)						
+
+--SQL Server / Oracle / MS Access :
+ALTER TABLE Persons
+DROP CONSTRAINT pk_PersonID;
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL FOREIGN KEY Constraint
+
+A FOREIGN KEY constraint in one table points to a PRIMARY KEY in another table.
+The FOREIGN KEY constraint is used to prevent action that would destroy links between tables.
+It also prevents invalid data from being inserted into the foreign key column, because
+it has to be one of the values contained in the table it points to.
+
+SQL FOREIGN KEY constraint on CREATE TABLE 
+The following SQL creates a FOREIGN KEY on the "P_Id" column when the "Orders" table is created :
+--MySQL
+CREATE TABLE Orders
+(
+O_Id int NOT NULL,
+OrderNo int NOT NULL,
+P_Id int,
+PRIMARY KEY (O_Id),
+FOREIGN KEY (P_Id) REFERENCES Persons(P_Id);
+
+--SQL Server / Access / MS Access :
+CREATE TABLE Orders
+(
+O_Id int NOT NULL PRIMARY KEY,
+OrderNO int NOT NULL,
+P_Id int FOREIGN KEY REFERENCES Persons(P_Id)
+);
+
+To allow naming a FOREIGN KEY and for defining a FOREIGN KEY constraint on multiple
+columns :
+--MySQL, SQL Servr, Oracle, MS Access
+CREATE Table Orders
+(
+O_Id int NOT NULL,
+OrderNO int NOT NULL,
+P_Id int,
+PRIMARY KEY (O_Id),											
+CONSTRAINT fk_perOrders FOREIGN KEY (P_Id) REFERENCES Person(P_Id)
+);
+---------------------------------------------------------------------------
+SQL FOREIGN KEY constraint on ALTER TABLE
+
+To create a FOREIGN KEY constraint on the "P_Id" column when the "Orders" table is already
+created :
+--MySQL / SQL Server / Oracle / MS Access
+ALTER TABLE Orders
+ADD FOREIGN KEY (P_Id) REFERENCES Persons(P_Id);
+
+To allow naming a FOREIGN KEY constraint, and for defining a FOREIGN KEY constraint on
+multiple columns :
+--MySQL / SQL Server / Oracle / MS Access
+ALTER TABLE Orders
+ADD CONSTRAINT fs_perOrder FOREIGN KEY (P_Id) REFERENCES Persons(P_Id);
+---------------------------------------------------------------------------
+To DROP a FOREIGN KEY constraint 
+
+==> use :
+--MySQL 
+ALTER TABLE Orders
+DROP FOREIGN KEY pk_perOrders;
+
+--SQL Server / Oracle / MS Access 
+ALTER TABLE Orders
+DROP CONSTRAINT pk_perOrder;
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL CHECK Constraint
+
+The CHECK constraint is used to limit the value range that can be placed in a column.
+When defined on a single column, it allows only certain values on the column.
+When defined on a table, it can limit the values in certain columns based on values in other
+columns in the row.
+
+SQL CHECK on CREATE TABLE (limiting the column "P_Id" values to only positive ones) :
+
+--MySQL :
+CREATE TABLE Persons
+(
+P_Id int NOT NULL,
+LastName varchar(255) NOT NULL,
+...
+City varchar(255),
+CHECK (P_Id > 0)
+);
+
+-- SQL Server / Oracle / MS Access :
+CREATE TABLE Persons
+(
+P_Id int NOT NULL CHECK (P_Id > 0),
+LastName varchar(255) NOT NULL,
+...
+City varchar(255)
+);
+
+And to allow naming of a CHECK constraint, and for defining a CHECK constraint on multiple columns :
+
+--MySQL / SQL Server / Oracle / MS Access :
+CREATE TABLE Persons
+(
+P_Id int NOT NULL,
+LastName varchar(255) NOT NULL,
+...
+City varchar(255),
+CONSTRAINT chk_Person CHECK (P_Id > 0 AND City='Sandnes');
+);
+-----------------------------------
+SQL CHECK on ALTER TABLE :
+
+Creating a CHECK constraint on a single column :
+
+--MySQL / SQL Server / Oracle / MS Access :
+ALTER TABLE Persons
+ADD CHECK (P_Id>0);
+
+And on multiple columns :
+--MySQL / SQL Server / Oracle / MS Access :
+ALTER TABLE Persons
+ADD CONSTRAINT chk_Person CHECK (P_Id>0 AND City='Sandnes');
+-----------------------------------
+DROP CHECK Constraint :
+
+--MySQL :
+ALTER TABLE Persons
+DROP CHECK chk_Person;
+
+--SQL Server / Oracle / MS Access :
+ALTER TABLE Persons
+DROP CONSTRAINT chk_Person;
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL DEFAULT Constraint												--!!
+
+The DEFAULT constraint is used to insert a default value into a column.
+The DEFAULT value will be added to all new records, if no other value is specified.
+
+Creating a DEFAULT constraint on the "City" column when "Persons" table is created :
+
+--MySQL / SQL Server / Oracle / MS Access :
+CREATE TABLE Persons
+(
+P_Id int NOT NULL,
+LastName varchar(255) NOT NULL,
+FirstName varchar(255),
+Address varchar(255),
+City varchar(255) DEFAULT 'Sydney'
+);
+
+The DEFAULT constraint can also be used to insert system values, by using functions like GETDATE() :				--!
+CREATE TABLE Orders
+(
+O_Id int NOT NULL,
+OrderNo int NOT NULL,
+P_Id int,
+OrderData date DEFAULT GETDATE(),
+);
+----------------------------------
+To create a DEFAULT constraint on the "City" when the table is already created :
+--MySQL :
+ALTER TABLE Persons
+ALTER City SET DEFAULT 'Sydney';
+
+-- SQL Server / MS Access :
+ALTER TABLE Persons
+ALTER COLUMN City SET DEFAULT 'Sydney';
+
+--Oracle
+ALTER TABLE Persons
+MODIFY City DEFAULT 'Sydney';		
+
+Note : Pour Oracle, pas de "SET" devant DEFAULT donc
+----------------------------------
+To DROP a DEFAULT constraint ==>									--! 0
+
+--MySQL :
+ALTER TABLE Persons
+ALTER City DROP DEFAULT;
+
+--SQL Server / MS Access / Oracle :
+ALTER TABLE Persons
+ALTER COLUMN City DROP DEFAULT;
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL CREATE INDEX Statement									--! 00
+
+The CREATE INDEX statement is used to create indexes in tables.
+Indexes allow the database application to find data fast; without reading the whole table.
+
+Indexes :
+An index can be created to find data more quickly and efficiently.
+The users cannot see the indexes, they are just used to speed up searches/queries.
+
+Note : Updating tables with indexes takes more time than updating a table without (because
+indexes also need an update). So I should only create indexes on columns (or tables) that
+will be frequently searched against.
+
+SQL CREATE INDEX syntax:										
+
+--Creates an index on a table. Duplicate values are allowed.						
+CREATE INDEX index_name
+ON table_name (column_name(s));
+
+--Creates a unique index on a table. Duplicate values are not allowed.						
+CREATE UNIQUE INDEX index_name
+ON table_name (column_name(s));
+
+/!\ : The syntax for creating indexes varies among different databases. Therefore ==> check the syntax
+for creating indexes in my database.
+
+EXAMPLES :
+
+--creating an index named "PIndex" on the LastName column in the Persons table :
+CREATE INDEX PIndex
+ON Persons (LastName);
+
+--creating an index on a combinaison of columns :
+CREATE INDEX PIndex
+ON Persons (LastName, FirstName);
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL DROP INDEX, DROP TABLE, and DROP DATABASE							--! 1
+
+Indexes, tables, and databases can be easily removed/deleted with the DROP statement.
+
+The DROP INDEX statement :
+
+--MS Access :
+DROP INDEX index_name ON table_name;							
+
+--SQL Server :
+DROP INDEX table_name.index_name;
+
+--DB2 / Oracle :										
+DROP INDEX index_name;
+
+--MySQL :
+ALTER TABLE table_name DROP INDEX index_name,
+------------------------------
+DROP TABLE 
+The DROP TABLE statement is used to delete a table :
+
+DROP TABLE table_name;
+------------------------------
+DROP DATABASE statement :
+The DROP DATABASE statement is used to delete a database :
+
+DROP DATABASE database_name;
+------------------------------
+The TRUNCATE TABLE statement
+The TRUNCATE TABLE statement is used to delete data inside the table, without
+deleting the table :
+
+TRUNCATE TABLE table_name;
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL ALTER TABLE Statement
+
+The ALTER TABLE statement is used to add, delete or  modify columns in an existing table
+
+SQL ALTER TABLE Syntaxes :									--! 10
+To add a column in a table ==>
+
+ALTER TABLE table_name
+ADD column_name data_type;
+
+To delete a column in a table, use the following syntax (/!\ some database systems don't
+allow deleting a column) :
+
+ALTER TABLE table_name
+DROP COLUMN column_name;									
+
+To change the data of a column in the table, use the following syntax :
+
+--SQL Server / MS Access :									-- ! 11
+ALTER TABLE table_name
+ALTER COLUMN column_name data_type;
+
+--MySQL / Oracle (Prior 10G)
+ALTER TABLE table_name
+MODIFY COLUMN column_name data_type;
+
+--Oracle (10 G and later)
+ALTER TABLE table_name
+MODIFY column_name data_type;
+
+EXAMPLE :
+To add a column DateOfBirth in the Persons table :
+
+ALTER TABLE Persons
+ADD DateOfBirth date;
+
+Change data type example :
+
+ALTER TABLE Persons
+ALTER COLUMN DateOfBirth year;
+
+Notice : in the previous statement, the column DateOfBirth is now of type year,
+which holds a year in a two-digit or four-digit format.
+
+DROP COLUMN Example :
+
+ALTER TABLE Persons
+DROP COLUMN DateOfBirth;
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL AUTO INCREMENT Field
+
+Auto-increment allows a unique number to be generated when a new record is inserted into a table.
+
+Auto increment a field : the primary key field is generally created automatically every time a 
+record is inserted ==> All I need to do is to create an auto-increment field in the table.
+
+Syntax for MySQL :
+-------------------------------------------------------------
+The following statement defines the "ID" column to be an auto-increment primary key field 
+in the "Persons" table : 
+CREATE TABLE Persons
+(
+ID int NOT NULL AUTO_INCREMENT,
+LastName varchar(255) NOT NULL,
+FirstName varchar(255),
+Address varchar(255),
+City varchar(255),
+PRIMARY KEY (ID)
+);
+
+By default, the value of AUTO_INCREMENT is 1, and it will increment by 1 for each new record.
+To let the AUTO_INCREMENT sequence start with another value ==>
+
+ALTER TABLE Persons AUTO_INCREMENT=100;								
+
+To insert new value into the Persons, no need to specify a value for the ID column (a unique value
+will be added automatically) :
+
+INSERT INTO Persons (LastName, FirstName)
+VALUES ("Le Rouge", "Est mis");
+
+Syntax for MS SQL Server :
+-------------------------------------------------------------
+CREATE TABLE Persons
+(
+ID int IDENTITY(1,1) PRIMARY KEY,
+LastName varchar(255) NOT NULL,
+FirstName varchar(255),
+Address varchar(255),
+City varchar(255)
+);
+
+The MS SQL Server uses the IDENTITY keyword to perform an auto-increment feature.
+The first argument is the initial value, and the second is the number to add for
+the implementation.
+Tip : To specify that the "ID" column should start at value 10 and increment by 5
+==> I need to change it to IDENTITY (10, 5)
+
+As for MySQL, no need to specify the primary key while inserting new records :
+
+INSERT INTO Persons (LastName, City)
+VALUES ("Smith", "London");
+
+Syntax for MS Access : 										--! 11
+-------------------------------------------------------------
+CREATE TABLE Persons
+(
+ID Integer PRIMARY KEY AUTOINCREMENT,
+LastName varchar(255) NOT NULL,
+FirstName varchar(255),
+Address varchar(255),
+City varchar(255)
+);
+
+MS Access uses the AUTOINCREMENT keyword to perform an auto-increment feature.
+By default, the starting value for AUTOINCREMENT is 1, and it will increment
+by 1 for each record.
+Tip : To specify that the "ID" column should start at 10, and increment
+by 5 for each record ==> I just change it to AUTOINCREMENT (10, 5)
+
+Again, no need to specify the auto-increment value when inserting new
+data.
+
+Syntax for Oracle :										--! 11
+-------------------------------------------------------------
+In Oracle, the code is a little bit more tricky.
+I will have to create an auto-increment field with the sequence object (which generates
+a number sequence).
+Use the following CREATE SEQUENCE syntax :
+
+CREATE SEQUENCE seq_person
+MINVALUE 1
+START WITH 1
+INCREMENT BY 1
+CACHE 10
+
+The code above creates a sequence called seq_person, that starts with 1 and increments by 1.
+It will also cache up to 10 values for performance. The cache option specifies how
+many sequence values will be stored in memory for faster access.
+
+To insert a new record into the "Persons" table, I will have to use the nextval function 
+(this function retrieves the next value  from seq_person sequence) :
+
+INSERT INTO Persons (ID, LastName, FirstName)
+VALUES (seq_person.nextval, 'Bastard', 'Gaspard');
+
+Here, the "ID" column will be assigned the next number from the seq_person sequence.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL Views
+
+A view is a virtual table. 
+This chapter shows how to create, update and delete a view.
+-----------------------------
+SQL CREATE VIEW Statement
+
+In SQL, a view is a virtual table based on the result-set of an SQL statement.
+A view contains rows and columns, just like a real table. The fields in a view are
+fields from one or more real tables in the database.
+
+I can add SQL functions, and JOIN statements to a view and present the data as
+if it were coming from one single table.
+
+SQL CREATE VIEW syntax :
+
+CREATE VIEW view_name AS										
+SELECT column_name(s)
+FROM table_name
+WHERE condition;
+
+Note : a view always shows up-to-date data ! The database engine recreates the data, using the 
+view's SQL statement, every time a user queries a view.
+
+SQL CREATE VIEW Example :
+
+CREATE VIEW [Low Price Products] AS
+SELECT ProductName, Price
+FROM Products
+WHERE Price<10;
+
+I can query the view above as follows :
+SELECT * FROM [Low Price Products];
+
+Another example :
+
+CREATE VIEW [Products Above Average Price] AS
+SELECT ProductName, Price
+FROM Products
+WHERE Price>(SELECT AVG(Price) FROM Products);
+
+And to query :
+SELECT * FROM [Products Above Average Price];
+
+Another view in the Northwind database calculates the total sale for each category in 1997.
+Note : This view selects its data from another view called "Products Sales for 1997" :
+
+CREATE VIEW [Category Sales For 1997] AS
+SELECT DISTINCT CategoryName, SUM(ProductSales) AS CategorySales
+FROM [Products Sales for 1997] 
+GROUP BY CategoryName;
+
+To query the view above :
+SELECT * FROM [Category Sales for 1997];
+
+Or :
+SELECT * FROM [Category Sales for 1997]
+WHERE CategoryName='Beverages';
+
+-------------------------------------------------------------
+SQL Updating a view
+
+SQL CREATE OR REPLACE VIEW syntax :
+
+CREATE OR REPLACE VIEW view_name AS
+SELECT column_name(s)
+FROM table_name
+WHERE condition
+
+Now I'm going to add the "Category" column to the "Low Price Products" view :
+
+CREATE OR REPLACE VIEW [Low Price Products] AS
+SELECT ProductName, ProductPrice, Category
+FROM Products
+WHERE Price<10;
+
+-------------------------------------------------------------
+SQL DROP VIEW Statement
+
+SQL DROP VIEW syntax :
+
+DROP VIEW view_name;
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL Date functions
+
+SQL Dates : the most difficult part when working with dates is to be sure that the format of the date
+I am trying insert, matches the format of the date column in the database.
+
+As long as my data contains only the date portion, my queries will work as expected. However, if
+a time portion is involved, it gets complicated.
+
+But first, let's take a look at the built-in functions for working with dates.
+
+MySQL Date functions :											--! 1
+-------------------------------------------------------------
+	- NOW() : Returns the current date and time									
+	- CURDATE() : Returns the current date
+	- CURTIME() : Returns the current time
+	- DATE() : Extracts the date part of a date or date/time expression
+	- EXTRACT() : Returns a single part of a date/time
+	- DATE_ADD() : Adds a specified time interval to a date
+	- DATE_SUB() : Subtracts a specified time interval from a date
+	- DATEDIFF() : Returns the number of days between two dates
+	- DATE_FORMAT() : Displays date/time data in different formats
+
+
+SQL Server Date funtions : 									
+-----------------------------
+	- GETDATE() : Returns the current date and time
+	- DATEPART() : Returns a single part of date/time
+	- DATEADD() : Adds or subtracts a specified time interval from a date
+	- DATEDIFF() : Returns the time between two dates
+	- CONVERT() : Displays date/time data in different formats
+-------------------------------------------------------------
+SQL Date Data Types : 										
+
+MySQL Date data types ==>
+
+	- DATE : format YYYY-MM-DD
+	- DATETIME : format YYYY-MM-DD HH:MM:SS
+	- TIMESTAMP : format YYYY-MM-DD HH:MM:SS
+	- YEAR : format YYYY or YY
+
+----------------------------
+SQL Server date data types :
+	- DATE : format => YYYY-MM-DD
+	- DATETIME : format => YYYY-MM-DD HH:MM:SS
+	- SMALLDATETIME : format => YYYY-MM-DD HH:MM:SS
+	- TIMESTAMP : format => a unique number
+
+Note : The date types are chosen for a column when I create a new table in my
+database !
+
+-------------------------------------------------------------
+SQL Working with dates 
+
+I can compare two dates easily if there is no time component involved.
+I can select a date easily if there is no time component involved.
+
+Indeed, when a table contains a time component as well, the following statement will give no
+result :
+
+SELECT * FROM Orders WHERE OrderDate='2008-11-11';
+
+==> This is because the query is looking only for dates with no time portion.
+
+Tip : If I want my queries easy and simple to maintain, I do not allow time 
+components in my dates !
+
+My own tip : use wildcard % ==>
+SELECT * FROM Orders WHERE OrderDate LIKE '2017-01-01%';
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL NULL Values
+
+NULL values represent missing unknown data.
+By default, a table column can hold null values.
+This chapter will explain the IS NULL and IS NOT NULL operators.
+
+SQL NULL Values :
+If a column in a table is optional, we can insert a new record and update an existing record
+without adding a value to this column. This means that the field will be saved with a NULL
+value.
+NULL values are treated differently from other values.
+NULL is used as a placeholder for unknown or inapplicable values.
+
+Note : it is not possible to compare NULL value and 0; they are not equivalent.
+
+SQL Working with NULL values : how can we test for NULL values ?
+It is not possible to test for NULL values with comparison operators, such as =, <, > or <>.
+-------------------------------------------------------------
+SQL IS NULL 
+
+To select only the record with NULL values in a table ==> I will have to use the
+IS NULL operator.
+
+Example :
+SELECT LastName, FirstName, Address FROM Persons
+WHERE Address IS NULL;
+
+Tip : always use IS NULL to look for NULL values.
+-------------------------------------------------------------
+SQL IS NOT NULL
+
+How do we select only the records with no NULL values in the "Address" column?
+
+==> by using the IS NOT NULL operator :
+
+SELECT LastName, FirstName, Address FROM Persons
+WHERE Address IS NOT NULL;
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL NULL Functions
+
+The result of any calculation involving a NULL value is a NULL value.
+
+For instance, the following statement will yield NULL values where UnitsInOrder are NULL :
+
+SELECT ProductName, UnitPrice*(UnitsInStock+UnitsInOrder)
+FROM Products;
+
+Therefore, there are functions allowing to convert a NULL value to 0.
+But each database has it's own functions.
+
+Below, if UnitsInOrder is NULL, it will do no harm to the calcultation, and this because of the 
+functions returning a 0 where the value is NULL :
+
+--MS Access :
+SELECT ProductName, UnitPrice*(UnitsInStock+IIF(ISNULL(UnitsInOrder),0,UnitsInOrder))
+FROM Products;
+
+--SQL Server :
+SELECT ProductName, UnitPrice*(UnitsInStock+ISNULL(UnitsInOrder,0))
+FROM Products;
+
+--Oracle												
+Oracle does not have a ISNULL() function. However, we can use the NVL() function to achieve the
+same result :
+
+SELECT ProductName, UnitPrice*(UnitsInStock+NVL(UnitsInOrder,0))
+FROM Products;
+
+--MySQL 
+MySQL does have an ISNULL() function. However, it works little bit different from Mircrosoft's 
+ISNULL() function. That's why, in MySQL, we can use the IFNULL() function, like this :
+
+SELECT ProductName, UnitPrice*(UnitsInStock+IFNULL(UnitsInOrder,0))
+FROM Products;
+
+or we can use the COALESCE() function, like this :
+
+SELECT ProductName, UnitPrice*(UnitsInStock+COALESCE(UnitsInOrder,0))
+FROM Products;
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL General Data Types
+
+A data type defines what kind of value a column can contain.
+
+SQL general data types :
+Each column in a database table is required to have a name and a data type.
+SQL developers have to decide what types of data will be stored inside each and every table column 
+when creating a SQL table. The data type is a label and a guideline for SQL to understand what
+type of data is expected inside of each column and it also identifies how SQL will interact
+with the stored data. 
+
+The following table lists the general data types in SQL :
+	- CHARACTER(n)	:  Character string. Fixed length n
+	- VARCHAR(n) or CHARACTER VARYING(n) : Character string.Variable length. Maximum length n
+	- BINARY(n) : Binary string. Fixed length n
+	- BOOLEAN : Stores TRUE or FALSE values
+	- VARBINARY(n) or BINARY VARYING(n) : Binary string. Variable length. Maximum length n
+	- INTEGER(p) : Integer numerical (no decimal). Precision p
+	- SMALLINT : Integer numerical (no decimal). Precision 5
+	- INTEGER : Integer numerical (no decimal). Precision 10
+	- BIGINT : Integer numerical (no decimal). Precision 19
+	- DECIMAL(p,s) : Exact numerical, precision p, scale s. Example : decimal(5,2) is a number
+			that has 3 digits before the decimal and 2 digits after the decimal
+	- NUMERIC(p,s) : Exact numerical, precision p, scale s. (SAME AS DECIMAL)
+	- FLOAT(p) : Approximate numerical, mantissa precision p. A floating number in base 10
+		     exponential notation. The size argument for this type consists of a single 
+		     number specifying the minimum precision
+	- REAL : Approximate numerical, mantissa precision 7
+	- FLOAT : Approximate numerical, mantissa precision 16
+	- DOUBLE PRECISION : Approximate numerical, mantissa precision 16
+	- DATE : Stores year, month and day values
+	- TIME : Stores hour, minute and second values
+	- TIMESTAMP : Stores year, month, day, hour, minute and second values
+	- INTERVAL : Composed of a number of integer fields, representing a period of time, depending 
+		     on the type of interval
+	- ARRAY : A set-length and ordered collection of elements
+	- MULTISET : A variable-length and unordered collection of elements
+	- XML : Stores XML data
+
+-------------------------------------------------------------
+SQL Data Type quick reference
+
+However, different databases offer different choices for the data type definition.
+The following table shows some of the common names of data types between the various database platforms :
+
+DATATYPE		Access			   SQL Server			 ORACLE 		MySQL			PostgreSQL
+---------		-------			   ----------			----------		-----			----------
+boolean			YES/NO			   Bit				Byte			N/A			Boolean
+integer			Number(integer)		   Int				Number			Int / Integer		Int / Integer
+float			Number(single)		   Float / Real			Number			Float			Numeric
+currency		Currency		   Money			N/A			N/A			Money
+string(fixed)		N/A			   Char				Char			Char			Char
+string(variable)	Text(<255) / Memo(65k+)	   Varchar			Varchar / Varchar2	Varchar			Varchar
+binary object		OLE Object Memo		   Binary(fixed up to 8K)	Long			Blob			Binary
+						   Varbinary(<8K)		Raw			Text			Varbinary
+						   Image(<2GB)
+
+
+Note : data types might have different names in different database. And even if the name is the same,
+the size and other details may be different. ==> ALWAYS CHECK DOCUMENTATION !
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+See SQL DB Data Types

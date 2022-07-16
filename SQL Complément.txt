@@ -1,0 +1,44 @@
+Les moteurs de tables sont une spécificité de MySQL. Ce sont des moteurs de stockage. Cela permet de gérer différemment les tables selon l'utilité qu'on a. 
+Les deux moteurs les plus connus sont : MyISAM et InnoDB (mais y en a d'autres).
+
+MyISAM
+-----------------------------------------------------------------------------
+C'est le moteur par défaut. Les commandes d'insertion et sélection de données sont particulièrement rapides sur les tables utilisant ces moteurs. Cependant,
+il ne gère pas certaines fonctionnalités importantes comme les clés étrangères, qui permettent de vérifier l'intégrité d'une référence d'une table à une autre
+table ou les transactions, qui permettent de réaliser des séries de modifications "en bloc" ou au contraire d'annuler ces modifications.
+
+InnoDV
+-----------------------------------------------------------------------------
+Plus lent et plus gourmand en ressources que MyISAM, ce moteur gère les clés étrangères et les transcations. De plus, en cas de crash du serveur, il
+possède un système de récupération automatique des données.
+
+Notation 
+-----------------------------------------------------------------------------
+Pour qu'une table utilise le moteur de mon choix, il suffit d'ajouter ceci à la fin de la commande de création :
+
+ENGINE=nomDuMoteur;
+
+Pour utiliser InnoDB par exemple :
+
+ENGINE=INNODB;
+
+Syntaxe de CREATE TABLE (quelques nouveautés)
+-----------------------------------------------------------------------------
+CREATE TABLE [IF NOT EXISTS] Nom_table (
+	colonne1 description_colonne1,
+	[colonne2 description_colonne2,
+    	colonne3 description_colonne3,
+   	 ...,]
+    	[PRIMARY KEY (colonne_clé_primaire)]
+) [ENGINE=moteur];
+
+Le IF NOT EXISTS est facultatif (d'où l'utilisation des crochets), et a le même rôle que dans la commande CREATE DATABASE : si une table de ce nom
+existe déjà dans la base de données, la requête renverra un warning plutôt qu'une erreur si IF NOT EXISTS est spécifié. 
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+GETTING THE FOREIGN KEY CONSTRAINT NAME
+
+EXAMPLE : 
+SELECT * 
+FROM information_schema.KEY_COLUMN_USAGE 
+WHERE constraint_schema = 'mybdd' AND table_name = 'news' AND referenced_table_name IS NOT NULL
